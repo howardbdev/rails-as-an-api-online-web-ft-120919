@@ -1,4 +1,4 @@
-class WarehousesController < ApplicationController
+class Api::V1::WarehousesController < ApplicationController
   before_action :set_warehouse, only: [:show, :update, :destroy]
 
   # GET /warehouses
