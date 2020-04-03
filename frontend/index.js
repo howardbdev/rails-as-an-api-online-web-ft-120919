@@ -1,6 +1,10 @@
 document.addEventListener("DOMContentLoaded", init)
 
 const baseURL = "http://localhost:3000/api/v1"
+const headers = {
+  "Content-Type": "application/json",
+  "Accept": "application/json"
+}
 const warehousesUL = () => document.getElementById("warehouses-index-ul")
 const wareHouseForm = () => document.getElementById("new-warehouse-form")
 const newWarehouseFormNameInput = () => document.getElementById("new-warehouse-name-input")
@@ -13,10 +17,10 @@ function init() {
 function attachListeners() {
   wareHouseForm().addEventListener("submit", createWarehouse)
   wareHouseForm().addEventListener("submit", createWarehouse)
-  warehousesUL().addEventListener("click", loadEditForm)
+  warehousesUL().addEventListener("click", handleWarehouseULClick)
 }
 
-function loadEditForm(event) {
+function handleWarehouseULClick(event) {
   if (event.target.className == "edit-button") {
     // target the div that contains the warehouse name
     // replace it with an edit form
@@ -25,7 +29,60 @@ function loadEditForm(event) {
     const div = document.getElementById(`warehouse-li-div-${id}`)
     const editForm = renderEditForm(id, name)
     div.innerHTML = editForm
+  } else if (event.target.className === "edit-warehouse-form-submit-button") {
+    event.preventDefault()
+    updateWarehouse(event.target.dataset.id)
+  } else if (event.target.className === "delete-warehouse-button") {
+    console.log("id is", event.target.dataset.id)
+    deleteWarehouse(event.target.dataset.id)
   }
+}
+
+function deleteWarehouse(id) {
+  fetch(`${baseURL}/warehouses/${id}`, {
+    method: "DELETE",
+    headers
+  })
+    .then(resp => resp.json())
+    .then(responseJSON => {
+      if (responseJSON.error) {
+        throw new Error(responseJSON.error)
+      } else {
+        getWarehouses()
+      }
+    })
+    .catch(alert)
+}
+
+function updateWarehouse(id) {
+  // to update a warehouse, I need to know:
+  // 1. Which warehouse?  - warehouse id
+  //   - from the argument
+  // 2. Information I'm sending to update (name)
+  //   - target the proper input using its html id attribute and the incoming id
+  const name = document.getElementById(`edit-warehouse-name-input-${id}`).value
+
+  // put together the "params" as the body
+  const body = {
+    warehouse: {
+      name
+    }
+  }
+
+  fetch(`${baseURL}/warehouses/${id}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(body)
+  })
+    .then(resp => resp.json())
+    .then(responseJSON => {
+      if (responseJSON.error) {
+        throw new Error(responseJSON.error)
+      } else {
+        getWarehouses()
+      }
+    })
+    .catch(alert)
 }
 
 function createWarehouse(event) {
@@ -47,19 +104,45 @@ function createWarehouse(event) {
     body: JSON.stringify(warehouseData)
   })
     .then(resp => resp.json())
-    .then(console.log)
+    .then(responseJSON => {
+      if (responseJSON.error) {
+        throw new Error(responseJSON.error)
+      } else {
+        getWarehouses()
+      }
+    })
+    .catch(alert)
 }
 
-function getWarehouses() {
+async function getWarehouses() {
   // what does fetch return???  a promise
-  fetch("http://localhost:3000/api/v1/warehouses")
-    .then(resp => resp.json())
-    .then(updateIndexDiv)
+  const response = await fetch("http://localhost:3000/api/v1/warehouses")
+  try {
+    const warehousesJSON = await response.json()
+    updateIndexDiv(warehousesJSON)
+
+  } catch {
+    alert("something went wrong...")
+  }
+  //oldFetch()
 }
+
+// function oldFetch() {
+//
+//   fetch("http://localhost:3000/api/v1/warehouses")
+//     .then(resp => {
+//       return resp.json()
+//     })
+//     .then((r) => {
+//       updateIndexDiv(r)
+//     })
+//     .catch(alert)
+// }
 
 function updateIndexDiv(warehousesJSON) {
   // cycle though the array of warehouse objects
   // add them to the DOM -- into the index div ul
+  warehousesUL().innerHTML = ""
   warehousesJSON.forEach(warehouseJSON => {
     // create the HTML
     const wareHouseLI = `
@@ -78,8 +161,9 @@ function updateIndexDiv(warehousesJSON) {
 function renderEditForm(id, name){
   return (`
     <form class="edit-warehouse-form" action="index.html" method="post">
-      <input class="edit-warehouse-name-input" type="text" name="name" value="${name}"><br>
-      <input type="submit" name="" value="Edit Warehouse"><br>
+      <input id="edit-warehouse-name-input-${id}" type="text" name="name" value="${name}"><br>
+      <input class="edit-warehouse-form-submit-button" data-id="${id}" type="submit" name="" value="Edit ${name}"><br>
     </form>
+    <button class="delete-warehouse-button" data-id="${id}">Delete</button>
   `)
 }

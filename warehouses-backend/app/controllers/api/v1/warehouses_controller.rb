@@ -34,7 +34,7 @@ class Api::V1::WarehousesController < ApplicationController
         except: [:created_at, :updated_at],
         status: :created
     else
-      render json: @warehouse.errors, status: :unprocessable_entity
+      render json: error_json(@warehouse), status: :unprocessable_entity
     end
   end
 
@@ -43,13 +43,18 @@ class Api::V1::WarehousesController < ApplicationController
     if @warehouse.update(warehouse_params)
       render json: @warehouse
     else
-      render json: @warehouse.errors, status: :unprocessable_entity
+      render json: error_json(@warehouse), status: :unprocessable_entity
     end
   end
 
   # DELETE /warehouses/1
   def destroy
     @warehouse.destroy
+
+    render json: {
+      message: "successfully destroyed #{@warehouse.name}"
+      },
+      status: :ok
   end
 
   private
@@ -61,5 +66,11 @@ class Api::V1::WarehousesController < ApplicationController
     # Only allow a trusted parameter "white list" through.
     def warehouse_params
       params.require(:warehouse).permit(:aisles, :name)
+    end
+
+    def error_json(warehouse)
+      {
+        error: warehouse.errors.full_messages.to_sentence
+      }
     end
 end
