@@ -7,6 +7,17 @@ class Warehouse {
     this.save()
   }
 
+  renderLI(){
+    return `
+      <li>
+        <div id="warehouse-li-div-${this.id}" data-id="${this.id}">
+          <p>${this.name}</p>
+        </div>
+        <button class="edit-button" data-id="${this.id}">Edit</button>
+      </li>
+      `
+  }
+
   renderEditForm(){
     return (`
               <form class="edit-warehouse-form" action="index.html" method="post">

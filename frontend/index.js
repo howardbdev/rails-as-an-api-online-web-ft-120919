@@ -148,15 +148,8 @@ function updateIndexDiv(warehousesJSON) {
   warehousesUL().innerHTML = ""
   warehousesJSON.forEach(warehouseJSON => {
     // create the HTML
-    const wareHouseLI = `
-      <li>
-        <div id="warehouse-li-div-${warehouseJSON.id}" data-id="${warehouseJSON.id}">
-          <p>${warehouseJSON.name}</p>
-        </div>
-        <button class="edit-button" data-id="${warehouseJSON.id}">Edit</button>
-      </li>
-      `
+    const newWarehouse = new Warehouse(warehouseJSON)
     // append it to the ul
-    warehousesUL().innerHTML += wareHouseLI
+    warehousesUL().innerHTML += newWarehouse.renderLI()
   })
 }
