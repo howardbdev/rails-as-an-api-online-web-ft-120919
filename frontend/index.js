@@ -160,13 +160,3 @@ function updateIndexDiv(warehousesJSON) {
     warehousesUL().innerHTML += wareHouseLI
   })
 }
-
-function renderEditForm(id, name){
-  return (`
-    <form class="edit-warehouse-form" action="index.html" method="post">
-      <input id="edit-warehouse-name-input-${id}" type="text" name="name" value="${name}"><br>
-      <input class="edit-warehouse-form-submit-button" data-id="${id}" type="submit" name="" value="Edit ${name}"><br>
-    </form>
-    <button class="delete-warehouse-button" data-id="${id}">Delete</button>
-  `)
-}
