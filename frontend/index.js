@@ -22,15 +22,10 @@ function attachListeners() {
 
 function handleWarehouseULClick(event) {
   if (event.target.className == "edit-button") {
-    // target the div that contains the warehouse name
-    // replace it with an edit form
     const id = event.target.dataset.id
     const warehouse = Warehouse.find(id)
-    const name = event.target.parentElement.firstElementChild.innerText
     const div = document.getElementById(`warehouse-li-div-${id}`)
-
     const editForm = warehouse.renderEditForm()
-
     div.innerHTML = editForm
   } else if (event.target.className === "edit-warehouse-form-submit-button") {
     event.preventDefault()
