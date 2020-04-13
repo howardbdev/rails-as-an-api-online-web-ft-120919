@@ -5,6 +5,9 @@ const headers = {
   "Content-Type": "application/json",
   "Accept": "application/json"
 }
+
+// using functions here so that elements will reliably be there when referenced,
+// while retaining global scope
 const warehousesUL = () => document.getElementById("warehouses-index-ul")
 const wareHouseForm = () => document.getElementById("new-warehouse-form")
 const newWarehouseFormNameInput = () => document.getElementById("new-warehouse-name-input")
@@ -37,11 +40,12 @@ function handleWarehouseULClick(event) {
 }
 
 function deleteWarehouse(id) {
-  fetch(`${baseURL}/warehouses/${id}`, {
-    method: "DELETE",
-    headers
-  })
-    .then(resp => resp.json())
+  // fetch(`${baseURL}/warehouses/${id}`, {
+  //   method: "DELETE",
+  //   headers
+  // })
+  // .then(resp => resp.json())
+  Api.delete(`/warehouses/${id}`)
     .then(responseJSON => {
       if (responseJSON.error) {
         throw new Error(responseJSON.error)
@@ -61,23 +65,18 @@ function updateWarehouse(id) {
   const name = document.getElementById(`edit-warehouse-name-input-${id}`).value
 
   // put together the "params" as the body
-  const body = {
+  const warehouseData = {
     warehouse: {
       name
     }
   }
 
-  fetch(`${baseURL}/warehouses/${id}`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify(body)
-  })
-    .then(resp => resp.json())
+  Api.patch(`/warehouses/${id}`, warehouseData)
     .then(responseJSON => {
       if (responseJSON.error) {
         throw new Error(responseJSON.error)
       } else {
-        getWarehouses()
+        // getWarehouses() //TODO: pick up here
       }
     })
     .catch(alert)
@@ -93,15 +92,8 @@ function createWarehouse(event) {
       name
     }
   }
-  fetch(`${baseURL}/warehouses`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
-    body: JSON.stringify(warehouseData)
-  })
-    .then(resp => resp.json())
+
+  Api.post("/warehouses", warehouseData)
     .then(responseJSON => {
       if (responseJSON.error) {
         throw new Error(responseJSON.error)
@@ -112,39 +104,28 @@ function createWarehouse(event) {
     .catch(alert)
 }
 
+// using async/await on this function just for demo -- you are welcome to use async/await or stick with only .then() -- totally up to you!
 async function getWarehouses() {
-  // what does fetch return???  a promise
-  const response = await fetch("http://localhost:3000/api/v1/warehouses")
+  // what does fetch return???  a promise.. we can use .then() or async/await (or even a combo of both!) to handle a promise
+  const warehousesJSON = await Api.get("/warehouses")
   try {
-    const warehousesJSON = await response.json()
-    updateIndexDiv(warehousesJSON)
-
-  } catch {
-    alert("something went wrong...")
+    loadIndexDiv(warehousesJSON)
+  } catch(error) {
+    alert(error)
   }
-  //oldFetch()
 }
 
-// function oldFetch() {
-//
-//   fetch("http://localhost:3000/api/v1/warehouses")
-//     .then(resp => {
-//       return resp.json()
-//     })
-//     .then((r) => {
-//       updateIndexDiv(r)
-//     })
-//     .catch(alert)
-// }
-
-function updateIndexDiv(warehousesJSON) {
+function loadIndexDiv(warehousesJSON) {
   // cycle though the array of warehouse objects
   // add them to the DOM -- into the index div ul
   warehousesUL().innerHTML = ""
   warehousesJSON.forEach(warehouseJSON => {
-    // create the HTML
+    // use the Warehouse class to make a new Warehouse object on the frontend with every JS object in the response array
     const newWarehouse = new Warehouse(warehouseJSON)
-    // append it to the ul
+    // use the .renderLI() to create the HTML
+    // then append it to the ul
+    // you can also use .insertAdjacentHTML instead of .innerHTML +=
+    // insertAdjacentHTML is more versatile and has some other benefits too
     warehousesUL().innerHTML += newWarehouse.renderLI()
   })
 }
