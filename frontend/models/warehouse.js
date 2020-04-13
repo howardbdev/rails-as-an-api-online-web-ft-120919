@@ -7,6 +7,12 @@ class Warehouse {
     this.save()
   }
 
+  // prototype "instance" methods
+
+  save() {
+    Warehouse.all.push(this)
+  }
+
   renderLI(){
     return `
       <li>
@@ -27,6 +33,8 @@ class Warehouse {
               <button class="delete-warehouse-button" data-id="${this.id}">Delete</button>
             `)
     }
+
+    // static "class" methods
 
     static find(id) {
       debugger
